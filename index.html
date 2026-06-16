@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ledger de Productos · M3S4</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --color-bg: #f1f3ee;
+      --color-surface: #ffffff;
+      --color-ink: #16201a;
+      --color-ink-soft: #4b5650;
+      --color-accent: #2d5bff;
+      --color-accent-soft: #e7ecff;
+      --color-danger: #c9684f;
+      --color-danger-soft: #fbeae4;
+      --color-border: #dde2d9;
+      --font-display: "Space Grotesk", sans-serif;
+      --font-body: "Inter", sans-serif;
+      --font-mono: "IBM Plex Mono", monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--color-bg);
+      color: var(--color-ink);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 48px 20px;
+    }
+    .ledger { width: 100%; max-width: 640px; }
+    header.ledger-head { margin-bottom: 28px; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-ink-soft);
+    }
+    h1 { font-family: var(--font-display); font-size: 32px; margin: 6px 0 4px; }
+    .subtitle { color: var(--color-ink-soft); font-size: 14px; margin: 0; }
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card h2 { font-family: var(--font-display); font-size: 16px; margin: 0 0 16px; }
+    .field-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; margin-bottom: 12px; }
+    label { display: block; font-size: 12px; color: var(--color-ink-soft); margin-bottom: 6px; }
+    input, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      background: #fafbf9;
+    }
+    input:focus, textarea:focus, button:focus { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+    textarea { resize: vertical; min-height: 56px; }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 14px;
+      padding: 10px 16px;
+    }
+    .btn-primary { background: var(--color-accent); color: #fff; width: 100%; margin-top: 4px; }
+    .btn-primary:hover { background: #2347cc; }
+    .btn-secondary { background: var(--color-accent-soft); color: var(--color-accent); width: 100%; }
+    .btn-secondary:hover { background: #d9e1ff; }
+    #mensaje { font-size: 13px; min-height: 18px; margin-top: 10px; }
+    #mensaje.exito { color: #1f7a4c; }
+    #mensaje.error { color: var(--color-danger); }
+    ul#listaProductos { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+    .producto-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fafbf9;
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      animation: aparecer 0.25s ease;
+    }
+    .producto-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: var(--color-ink);
+      color: #fff;
+      padding: 3px 7px;
+      border-radius: 5px;
+      transform: rotate(-2deg);
+      flex-shrink: 0;
+    }
+    .producto-info { flex: 1; min-width: 0; }
+    .producto-nombre { font-weight: 600; font-size: 14px; margin: 0; }
+    .producto-descripcion { font-size: 12px; color: var(--color-ink-soft); margin: 2px 0 0; }
+    .producto-precio { font-family: var(--font-mono); font-size: 14px; font-weight: 500; white-space: nowrap; }
+    .producto-acciones { display: flex; gap: 6px; }
+    .btn-icono { background: transparent; border: 1px solid var(--color-border); width: 30px; height: 30px; border-radius: 6px; font-size: 13px; padding: 0; }
+    .btn-icono.eliminar:hover { background: var(--color-danger-soft); border-color: var(--color-danger); }
+    .btn-icono.editar:hover { background: var(--color-accent-soft); border-color: var(--color-accent); }
+    .vacio { font-size: 13px; color: var(--color-ink-soft); text-align: center; padding: 20px 0; }
+    @keyframes aparecer {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .producto-item { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="ledger">
+    <!-- ===================================================================
+         TASK 1: Estructura general del proyecto
+         Este archivo contiene el formulario, la lista y el botón de
+         sincronización. La lógica vive en app.js, enlazado al final del
+         <body>. Verificamos que el enlace sea correcto: src="app.js".
+    ==================================================================== -->
+    <header class="ledger-head">
+      <p class="eyebrow">Módulo 3 · Sesión 4</p>
+      <h1>Ledger de productos</h1>
+      <p class="subtitle">Agrega, edita y sincroniza tu inventario con el servidor.</p>
+    </header>
+
+    <!-- TASK 2: Formulario para capturar nombre, precio y descripción -->
+    <section class="card">
+      <h2>Agregar producto</h2>
+      <form id="formProducto">
+        <div class="field-row">
+          <div>
+            <label for="inputNombre">Nombre</label>
+            <input type="text" id="inputNombre" placeholder="Ej: Teclado mecánico" />
+          </div>
+          <div>
+            <label for="inputPrecio">Precio (COP)</label>
+            <input type="number" id="inputPrecio" placeholder="Ej: 150000" min="0" step="1" />
+          </div>
+        </div>
+        <div>
+          <label for="inputDescripcion">Descripción</label>
+          <textarea id="inputDescripcion" placeholder="Detalle breve del producto"></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Agregar a la lista</button>
+        <p id="mensaje"></p>
+      </form>
+    </section>
+
+    <!-- TASK 3 + TASK 4: Lista dinámica del DOM, alimentada por los datos
+         persistidos en Local Storage -->
+    <section class="card">
+      <h2>Inventario actual</h2>
+      <ul id="listaProductos"></ul>
+    </section>
+
+    <!-- TASK 5: Sincronización con la API mediante Fetch -->
+    <section class="card">
+      <h2>Sincronización con el servidor</h2>
+      <button id="btnSincronizar" class="btn-secondary">Sincronizar con API</button>
+      <p id="estadoSincronizacion" style="font-size:12px; color:var(--color-ink-soft); margin-top:10px;"></p>
+    </section>
+  </main>
+
+  <!-- Enlazamos la lógica de la aplicación (debe ir al final del body) -->
+  <script src="app.js"></script>
+</body>
+</html>
