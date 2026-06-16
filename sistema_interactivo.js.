@@ -22,4 +22,102 @@ function mostrarMensaje(texto, tipo = "exito") {
     mensajeEl.className = "";
   }, 4000);
 }
+unction validarCamposProducto(nombre, precio, descripcion) {
+  if (!nombre || nombre.trim() === "") {
+    mostrarMensaje("Error: el nombre del producto no puede estar vacío.", "error");
+    return false;
+  }
  
+  const precioNumerico = Number(precio);
+  if (precio === "" || isNaN(precioNumerico) || precioNumerico <= 0) {
+    mostrarMensaje("Error: ingresa un precio numérico mayor a 0.", "error");
+    return false;
+  }
+ 
+  if (!descripcion || descripcion.trim() === "") {
+    mostrarMensaje("Error: la descripción no puede estar vacía.", "error");
+    return false;
+  }
+ 
+  return true;
+}
+ 
+// Genera un id único simple para identificar cada producto localmente.
+function generarIdUnico() {
+  return `local-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+}
+ 
+onst precioNumerico = Number(precio);
+  if (precio === "" || isNaN(precioNumerico) || precioNumerico <= 0) {
+    mostrarMensaje("Error: ingresa un precio numérico mayor a 0.", "error");
+    return false;
+  }
+ 
+  if (!descripcion || descripcion.trim() === "") {
+    mostrarMensaje("Error: la descripción no puede estar vacía.", "error");
+    return false;
+  }
+ 
+  return true;
+}
+ 
+// Genera un id único simple para identificar cada producto localmente.
+function generarIdUnico() {
+  return `local-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+}
+
+// Crea el <li> de un producto, con su etiqueta, nombre, descripción,
+// precio y los botones "Editar" y "Eliminar".
+function crearElementoListaProducto(producto) {
+  const li = document.createElement("li");
+  li.className = "producto-item";
+  li.dataset.id = producto.id; // guardamos el id en el propio elemento del DOM
+ 
+  const tag = document.createElement("span");
+  tag.className = "producto-tag";
+  tag.textContent = `#${String(producto.id).slice(-4)}`;
+ 
+  const info = document.createElement("div");
+  info.className = "producto-info";
+ 
+  const nombreEl = document.createElement("p");
+  nombreEl.className = "producto-nombre";
+  nombreEl.textContent = producto.nombre;
+ 
+  const descripcionEl = document.createElement("p");
+  descripcionEl.className = "producto-descripcion";
+  descripcionEl.textContent = producto.descripcion;
+ 
+  info.appendChild(nombreEl);
+  info.appendChild(descripcionEl);
+ 
+  const precioEl = document.createElement("span");
+  precioEl.className = "producto-precio";
+  precioEl.textContent = `$${Number(producto.precio).toLocaleString("es-CO")}`;
+ 
+  const acciones = document.createElement("div");
+  acciones.className = "producto-acciones";
+ 
+  const btnEditar = document.createElement("button");
+  btnEditar.className = "btn-icono editar";
+  btnEditar.title = "Editar precio";
+  btnEditar.textContent = "✎";
+  btnEditar.addEventListener("click", () => editarPrecioProducto(producto.id));
+ 
+  const btnEliminar = document.createElement("button");
+  btnEliminar.className = "btn-icono eliminar";
+  btnEliminar.title = "Eliminar producto";
+  btnEliminar.textContent = "✕";
+  // TASK 3: función para borrar el elemento al hacer clic
+  btnEliminar.addEventListener("click", () => eliminarProducto(producto.id));
+ 
+  acciones.appendChild(btnEditar);
+  acciones.appendChild(btnEliminar);
+ 
+  li.appendChild(tag);
+  li.appendChild(info);
+  li.appendChild(precioEl);
+  li.appendChild(acciones);
+ 
+  return li;
+}
