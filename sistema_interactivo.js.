@@ -1,17 +1,22 @@
-const edadEsValida =
-  edadIngresada !== null &&
-  edadIngresada.trim() !== "" &&
-  !isNaN(edadUsuario);
+function validarProducto(producto) {
+  const tieneIdValido = Boolean(producto.id) && producto.id.trim() !== "";
+  const tieneNombreValido =
+    typeof producto.nombre === "string" && producto.nombre.trim() !== "";
+  const tienePrecioValido =
+    typeof producto.precio === "number" && producto.precio > 0;
  
-  if (edadUsuario < 18) {
-    // Caso: el usuario es menor de edad
-    const mensajeMenorEdad = `Hola ${nombreUsuario}, eres menor de edad. ¡Sigue aprendiendo y disfrutando del código!`;
-    alert(mensajeMenorEdad);
-    console.log(mensajeMenorEdad);
-  } else {
-    // Caso: el usuario es mayor o igual de edad
-    const mensajeMayorEdad = `Hola ${nombreUsuario}, eres mayor de edad. ¡Prepárate para grandes oportunidades en el mundo de la programación!`;
-    alert(mensajeMayorEdad);
-    console.log(mensajeMayorEdad);
-  }
+  return tieneIdValido && tieneNombreValido && tienePrecioValido;
 }
+ 
+// Recorremos todos los productos y validamos cada uno con Object.values()
+console.log("\nValidación de productos:");
+Object.values(productos).forEach((producto) => {
+  const esValido = validarProducto(producto);
+  if (esValido) {
+    console.log(`  Producto válido: ${producto.nombre}`);
+  } else {
+    console.error(
+      `  Producto inválido detectado: ${JSON.stringify(producto)}`
+    );
+  }
+});
