@@ -1,123 +1,152 @@
-const formProducto = document.getElementById("formProducto");
-const inputNombre = document.getElementById("inputNombre");
-const inputPrecio = document.getElementById("inputPrecio");
-const inputDescripcion = document.getElementById("inputDescripcion");
-const listaProductosUL = document.getElementById("listaProductos");
-const mensajeEl = document.getElementById("mensaje");
-const btnSincronizar = document.getElementById("btnSincronizar");
-const estadoSincronizacionEl = document.getElementById("estadoSincronizacion");
-function mostrarMensaje(texto, tipo = "exito") {
-  mensajeEl.textContent = texto;
-  mensajeEl.className = tipo; // aplica la clase "exito" o "error" del CSS
+const URL_API = "http://localhost:3000/productos";
  
-  if (tipo === "error") {
-    console.error(texto);
-  } else {
-    console.log(texto);
+// GET: obtiene la lista completa de productos desde el servidor
+async function obtenerProductosDesdeAPI() {
+  try {
+    const respuesta = await fetch(URL_API);
+ 
+    if (!respuesta.ok) {
+      throw new Error(`Error HTTP ${respuesta.status}`);
+    }
+ 
+    const datos = await respuesta.json();
+    console.log("GET exitoso, productos recibidos:", datos);
+    return datos;
+  } catch (error) {
+    console.error("Error al obtener productos de la API:", error);
+    mostrarMensaje("No se pudo conectar con el servidor (GET).", "error");
+    return null;
   }
- 
-  // El mensaje se limpia automáticamente después de unos segundos
-  setTimeout(() => {
-    mensajeEl.textContent = "";
-    mensajeEl.className = "";
-  }, 4000);
-}
-unction validarCamposProducto(nombre, precio, descripcion) {
-  if (!nombre || nombre.trim() === "") {
-    mostrarMensaje("Error: el nombre del producto no puede estar vacío.", "error");
-    return false;
-  }
- 
-  const precioNumerico = Number(precio);
-  if (precio === "" || isNaN(precioNumerico) || precioNumerico <= 0) {
-    mostrarMensaje("Error: ingresa un precio numérico mayor a 0.", "error");
-    return false;
-  }
- 
-  if (!descripcion || descripcion.trim() === "") {
-    mostrarMensaje("Error: la descripción no puede estar vacía.", "error");
-    return false;
-  }
- 
-  return true;
 }
  
-// Genera un id único simple para identificar cada producto localmente.
-function generarIdUnico() {
-  return `local-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+// POST: agrega un nuevo producto en el servidor
+async function crearProductoEnAPI(producto) {
+  try {
+    const respuesta = await fetch(URL_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(producto),
+    });
+ 
+    if (!respuesta.ok) {
+      throw new Error(`Error HTTP ${respuesta.status}`);
+    }
+ 
+    const productoCreado = await respuesta.json();
+    console.log("POST exitoso, producto creado en el servidor:", productoCreado);
+ 
+    // Guardamos el id que asignó el servidor para futuras actualizaciones
+    producto.apiId = productoCreado.id;
+    guardarProductosEnLocalStorage();
+ 
+    return productoCreado;
+  } catch (error) {
+    console.error("Error al crear producto en la API:", error);
+    mostrarMensaje("El producto se guardó local pero no se sincronizó (POST).", "error");
+    return null;
+  }
 }
  
-onst precioNumerico = Number(precio);
-  if (precio === "" || isNaN(precioNumerico) || precioNumerico <= 0) {
-    mostrarMensaje("Error: ingresa un precio numérico mayor a 0.", "error");
-    return false;
+// PUT: actualiza un producto existente en el servidor
+async function actualizarProductoEnAPI(apiId, producto) {
+  try {
+    const respuesta = await fetch(`${URL_API}/${apiId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(producto),
+    });
+ 
+    if (!respuesta.ok) {
+      throw new Error(`Error HTTP ${respuesta.status}`);
+    }
+ 
+    const productoActualizado = await respuesta.json();
+    console.log("PUT exitoso, producto actualizado en el servidor:", productoActualizado);
+    return productoActualizado;
+  } catch (error) {
+    console.error("Error al actualizar producto en la API:", error);
+    mostrarMensaje("No se pudo sincronizar la actualización (PUT).", "error");
+    return null;
+  }
+}
+ 
+// DELETE: elimina un producto del servidor
+async function eliminarProductoEnAPI(apiId) {
+  try {
+    const respuesta = await fetch(`${URL_API}/${apiId}`, { method: "DELETE" });
+ 
+    if (!respuesta.ok) {
+      throw new Error(`Error HTTP ${respuesta.status}`);
+    }
+ 
+    console.log(`DELETE exitoso, producto ${apiId} eliminado del servidor.`);
+  } catch (error) {
+    console.error("Error al eliminar producto en la API:", error);
+    mostrarMensaje("No se pudo eliminar el producto en el servidor (DELETE).", "error");
+  }
+}
+ 
+// Botón "Sincronizar con API": trae los datos del servidor, los asigna
+// como fuente de verdad local y refresca Local Storage + DOM.
+btnSincronizar.addEventListener("click", async () => {
+  estadoSincronizacionEl.textContent = "Sincronizando...";
+  const productosDelServidor = await obtenerProductosDesdeAPI();
+ 
+  if (productosDelServidor === null) {
+    estadoSincronizacionEl.textContent = "Sincronización fallida. Revisa la consola.";
+    return;
   }
  
-  if (!descripcion || descripcion.trim() === "") {
-    mostrarMensaje("Error: la descripción no puede estar vacía.", "error");
-    return false;
+  listaProductos = productosDelServidor.map((p) => ({
+    id: p.id ? `api-${p.id}` : generarIdUnico(),
+    nombre: p.nombre,
+    precio: p.precio,
+    descripcion: p.descripcion,
+    apiId: p.id,
+  }));
+ 
+  guardarProductosEnLocalStorage();
+  renderizarLista();
+ 
+  estadoSincronizacionEl.textContent = `Sincronizado: ${listaProductos.length} producto(s) desde el servidor.`;
+  mostrarMensaje("Sincronización con la API completada.", "exito");
+});
+ 
+// ======================================================================
+// TASK 6: Validaciones y pruebas finales
+// ======================================================================
+// Escuchamos el envío del formulario: capturamos, validamos y agregamos
+// el producto, conectando todas las piezas anteriores.
+formProducto.addEventListener("submit", (evento) => {
+  evento.preventDefault();
+ 
+  const nombre = inputNombre.value;
+  const precio = inputPrecio.value;
+  const descripcion = inputDescripcion.value;
+ 
+  if (!validarCamposProducto(nombre, precio, descripcion)) {
+    return; // la función ya mostró el mensaje de error correspondiente
   }
  
-  return true;
+  agregarProducto(nombre, precio, descripcion);
+  formProducto.reset(); // limpiamos el formulario para el siguiente registro
+});
+ 
+// Función de apoyo para las pruebas finales: imprime en consola un
+// resumen del estado actual (arreglo, DOM y Local Storage) para poder
+// comprobar y capturar que las tres fuentes coinciden entre sí.
+function mostrarResumenDePruebas() {
+  console.log("===== RESUMEN DE PRUEBAS =====");
+  console.log("Arreglo en memoria (listaProductos):", listaProductos);
+  console.log("Elementos renderizados en el DOM:", listaProductosUL.children.length);
+  console.log("Contenido crudo en Local Storage:", localStorage.getItem(CLAVE_LOCAL_STORAGE));
+  console.log("================================");
 }
  
-// Genera un id único simple para identificar cada producto localmente.
-function generarIdUnico() {
-  return `local-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-}
-
-// Crea el <li> de un producto, con su etiqueta, nombre, descripción,
-// precio y los botones "Editar" y "Eliminar".
-function crearElementoListaProducto(producto) {
-  const li = document.createElement("li");
-  li.className = "producto-item";
-  li.dataset.id = producto.id; // guardamos el id en el propio elemento del DOM
+// Inicializamos la aplicación: cargamos lo que haya en Local Storage y
+// lo renderizamos automáticamente al abrir o recargar la página.
+document.addEventListener("DOMContentLoaded", () => {
+  cargarProductosAlIniciar();
+  mostrarResumenDePruebas();
+});
  
-  const tag = document.createElement("span");
-  tag.className = "producto-tag";
-  tag.textContent = `#${String(producto.id).slice(-4)}`;
- 
-  const info = document.createElement("div");
-  info.className = "producto-info";
- 
-  const nombreEl = document.createElement("p");
-  nombreEl.className = "producto-nombre";
-  nombreEl.textContent = producto.nombre;
- 
-  const descripcionEl = document.createElement("p");
-  descripcionEl.className = "producto-descripcion";
-  descripcionEl.textContent = producto.descripcion;
- 
-  info.appendChild(nombreEl);
-  info.appendChild(descripcionEl);
- 
-  const precioEl = document.createElement("span");
-  precioEl.className = "producto-precio";
-  precioEl.textContent = `$${Number(producto.precio).toLocaleString("es-CO")}`;
- 
-  const acciones = document.createElement("div");
-  acciones.className = "producto-acciones";
- 
-  const btnEditar = document.createElement("button");
-  btnEditar.className = "btn-icono editar";
-  btnEditar.title = "Editar precio";
-  btnEditar.textContent = "✎";
-  btnEditar.addEventListener("click", () => editarPrecioProducto(producto.id));
- 
-  const btnEliminar = document.createElement("button");
-  btnEliminar.className = "btn-icono eliminar";
-  btnEliminar.title = "Eliminar producto";
-  btnEliminar.textContent = "✕";
-  // TASK 3: función para borrar el elemento al hacer clic
-  btnEliminar.addEventListener("click", () => eliminarProducto(producto.id));
- 
-  acciones.appendChild(btnEditar);
-  acciones.appendChild(btnEliminar);
- 
-  li.appendChild(tag);
-  li.appendChild(info);
-  li.appendChild(precioEl);
-  li.appendChild(acciones);
- 
-  return li;
-}
