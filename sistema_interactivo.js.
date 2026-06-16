@@ -1,17 +1,3 @@
-const esEntornoNode = typeof window === "undefined";
- 
-if (esEntornoNode) {
-  // Cargamos readline-sync solo si estamos en Node.js
-  const readlineSync = require("readline-sync");
- 
-  // Creamos una versión de prompt() que funcione en la terminal
-  global.prompt = function (mensaje) {
-    return readlineSync.question(mensaje + " ");
-  };
- 
-  // Creamos una versión de alert() que funcione en la terminal
-  global.alert = function (mensaje) {
-    console.log(mensaje);
-  };
-}
- 
+const nombreUsuario = prompt("Por favor, ingresa tu nombre:");
+const edadIngresada = prompt("Por favor, ingresa tu edad:");
+let edadUsuario = Number(edadIngresada);
