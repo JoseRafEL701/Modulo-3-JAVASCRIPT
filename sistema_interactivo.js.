@@ -1,22 +1,8 @@
-function validarProducto(producto) {
-  const tieneIdValido = Boolean(producto.id) && producto.id.trim() !== "";
-  const tieneNombreValido =
-    typeof producto.nombre === "string" && producto.nombre.trim() !== "";
-  const tienePrecioValido =
-    typeof producto.precio === "number" && producto.precio > 0;
- 
-  return tieneIdValido && tieneNombreValido && tienePrecioValido;
-}
- 
-// Recorremos todos los productos y validamos cada uno con Object.values()
-console.log("\nValidación de productos:");
-Object.values(productos).forEach((producto) => {
-  const esValido = validarProducto(producto);
-  if (esValido) {
-    console.log(`  Producto válido: ${producto.nombre}`);
-  } else {
-    console.error(
-      `  Producto inválido detectado: ${JSON.stringify(producto)}`
-    );
-  }
-});
+const formProducto = document.getElementById("formProducto");
+const inputNombre = document.getElementById("inputNombre");
+const inputPrecio = document.getElementById("inputPrecio");
+const inputDescripcion = document.getElementById("inputDescripcion");
+const listaProductosUL = document.getElementById("listaProductos");
+const mensajeEl = document.getElementById("mensaje");
+const btnSincronizar = document.getElementById("btnSincronizar");
+const estadoSincronizacionEl = document.getElementById("estadoSincronizacion");
