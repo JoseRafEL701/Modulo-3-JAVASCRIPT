@@ -1,3 +1,8 @@
-const nombreUsuario = prompt("Por favor, ingresa tu nombre:");
-const edadIngresada = prompt("Por favor, ingresa tu edad:");
-let edadUsuario = Number(edadIngresada);
+const edadEsValida =
+  edadIngresada !== null &&
+  edadIngresada.trim() !== "" &&
+  !isNaN(edadUsuario);
+ 
+if (!edadEsValida) {
+  console.error("Error: Por favor, ingresa una edad válida en números.");
+} else {
