@@ -6,3 +6,20 @@ const listaProductosUL = document.getElementById("listaProductos");
 const mensajeEl = document.getElementById("mensaje");
 const btnSincronizar = document.getElementById("btnSincronizar");
 const estadoSincronizacionEl = document.getElementById("estadoSincronizacion");
+function mostrarMensaje(texto, tipo = "exito") {
+  mensajeEl.textContent = texto;
+  mensajeEl.className = tipo; // aplica la clase "exito" o "error" del CSS
+ 
+  if (tipo === "error") {
+    console.error(texto);
+  } else {
+    console.log(texto);
+  }
+ 
+  // El mensaje se limpia automáticamente después de unos segundos
+  setTimeout(() => {
+    mensajeEl.textContent = "";
+    mensajeEl.className = "";
+  }, 4000);
+}
+ 
